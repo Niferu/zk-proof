@@ -66,5 +66,13 @@ bb verify <with-proper-params>
 
 ```bash
 # Remove '/target, Prover.toml, inputs.txt and generate-inputs.sh'
+
+# Compiles circuit into ACIR
 nargo compile
+
+# Generates verification key
+bb write_vk --oracle_hash keccak -b ./target/zk_ecdsa.json -o ./target
+
+# Generates verifier smart contract
+bb write_solidity_verifier -k ./target/vk -o ./target/Verifier.sol
 ```

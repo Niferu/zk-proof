@@ -7,6 +7,7 @@ fn main(
     hashed_message: pub [u8; 32],
     expected_address: Field,
 ) {
+    // If 'ecdsa_secp256k1::verify_signature' used instead will check malleability, so manual check is no more required
     let address = ecrecover::ecrecover(pub_key_x, pub_key_y, signature, hashed_message);
 
     // Use below for 'nargo versions > 1.0.0-beta.3'

@@ -7,7 +7,9 @@ fn main(x: Field, y: pub Field) {
 #[test]
 fn test_main() {
     main(1, 2);
+}
 
-    // Uncomment to make test fail
-    // main(1, 1);
+#[test(should_fail)]
+fn test_main_should_fail() {
+    main(1, 1);
 }

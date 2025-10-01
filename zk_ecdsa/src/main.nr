@@ -1,24 +1,5 @@
 use dep::ecrecover;
 
-fn is_less_than_or_equal(a: [u8; 32], b: [u8; 32]) -> bool {
-    let mut result = true;
-    let mut found_difference = false;
-
-    for i in 0..32 {
-        if !found_difference {
-            if a[i] < b[i] {
-                result = true;
-                found_difference = true;
-            } else if a[i] > b[i] {
-                result = false;
-                found_difference = true;
-            }
-        }
-    }
-
-    result
-}
-
 fn main(
     pub_key_x: [u8; 32],
     pub_key_y: [u8; 32],
@@ -62,6 +43,25 @@ fn main(
     );
 }
 
+fn is_less_than_or_equal(a: [u8; 32], b: [u8; 32]) -> bool {
+    let mut result = true;
+    let mut found_difference = false;
+
+    for i in 0..32 {
+        if !found_difference {
+            if a[i] < b[i] {
+                result = true;
+                found_difference = true;
+            } else if a[i] > b[i] {
+                result = false;
+                found_difference = true;
+            }
+        }
+    }
+
+    result
+}
+
 #[test]
 fn test_main() {
     // Mock test data - replace with real signature data for actual testing
@@ -80,4 +80,30 @@ fn test_main() {
     //     _hashed_message,
     //     _expected_address,
     // );
+}
+
+#[test]
+fn test_is_less_than_or_equal() {
+    // Test the malleability check comparison function
+
+    // Test: value less than half
+    let low_s: [u8; 32] = [
+        0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE,
+        0xF0, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC,
+        0xDE, 0xF0,
+    ];
+    let half_curve_order: [u8; 32] = [
+        0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+        0xFF, 0x5D, 0x57, 0x6E, 0x73, 0x57, 0xA4, 0x50, 0x1D, 0xDF, 0xE9, 0x2F, 0x46, 0x68, 0x1B,
+        0x20, 0xA0,
+    ];
+    assert(is_less_than_or_equal(low_s, half_curve_order), "Low s should pass");
+
+    // Test: value higher than half (malleable)
+    let high_s: [u8; 32] = [
+        0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+        0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+        0xFF, 0xFF,
+    ];
+    assert(!is_less_than_or_equal(high_s, half_curve_order), "High s should fail");
 }

@@ -57,7 +57,7 @@ contract Panagram is ERC1155, Ownable {
 
         bytes32[] memory inputs = new bytes32[](2);
         inputs[0] = s_answer;
-        inputs[1] = bytes32(uint256(uint160(msg.sender))); // hard code to prevent front-running!
+        inputs[1] = bytes32(uint256(uint160(msg.sender)));
 
         bool proofResult = s_verifier.verify(proof, inputs);
 

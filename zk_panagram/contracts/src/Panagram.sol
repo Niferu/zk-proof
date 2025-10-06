@@ -42,6 +42,7 @@ contract Panagram is ERC1155, Ownable {
             if (block.timestamp < s_roundStartTime + MIN_DURATION) revert Panagram__MinTimeNotPassed(MIN_DURATION, block.timestamp - s_roundStartTime);
             if (s_currentRoundWinner == address(0)) revert Panagram__NoRoundWinner();
 
+            s_roundStartTime = block.timestamp;
             s_answer = _correctAnswer;
             s_currentRoundWinner = address(0);
         }

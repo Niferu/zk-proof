@@ -58,12 +58,13 @@ contract PanagramTest is Test {
         vm.assertEq(panagram.balanceOf(user, 0), 1);
         vm.assertEq(panagram.balanceOf(user, 1), 0);
 
-        // check they can't try again
+        // Check they can't try again
         vm.prank(user);
         vm.expectRevert();
         panagram.makeGuess(proof);
 
-        // check if another user can't reuse proof
+        // Check if another user can't reuse proof
+        /** @NOTE If we remove '_address' param from main.nr then this check will fail! */
         vm.prank(second_user);
         vm.expectRevert();
         panagram.makeGuess(proof);
@@ -72,20 +73,33 @@ contract PanagramTest is Test {
         vm.assertEq(panagram.balanceOf(second_user, 1), 0);
     }
 
-    //     function testStartNewRound() public {
-    //     // start a round (in setUp)
-    //     // get a winner
-    //     vm.prank(user);
-    //     panagram.makeGuess(proof);
-    //     // min time passed
-    //     vm.warp(panagram.MIN_DURATION() + 1);
-    //     // start a new round
-    //     panagram.newRound(bytes32(uint256(keccak256(abi.encodePacked(bytes32(uint256(keccak256("abcdefghi")) % FIELD_MODULUS)))) % FIELD_MODULUS));
-    //     // validate the state has reset
-    //     vm.assertEq(panagram.s_answer, bytes32(uint256(keccak256(abi.encodePacked(bytes32(uint256(keccak256("abcdefghi")) % FIELD_MODULUS)))) % FIELD_MODULUS));
-    //     vm.assertEq(panagram.getCurrentRoundStatus(), address(0));
-    //     vm.assertEq(panagram.s_currentRound(), 2);
-    // }
+    function testStartNewRound() public {
+        vm.prank(user);
+        panagram.makeGuess(proof);
+
+        vm.warp(panagram.MIN_DURATION() + 1);
+        panagram.newRound(bytes32(uint256(keccak256(abi.encodePacked(bytes32(uint256(keccak256("abcdefghi")) % FIELD_MODULUS)))) % FIELD_MODULUS));
+
+        vm.assertEq(
+            panagram.s_answer(),
+            bytes32(uint256(keccak256(abi.encodePacked(bytes32(uint256(keccak256("abcdefghi")) % FIELD_MODULUS)))) % FIELD_MODULUS)
+        );
+        vm.assertEq(panagram.s_currentRoundWinner(), address(0));
+        vm.assertEq(panagram.s_currentRound(), 2);
+
+        // Cannot start new round if min time not passed
+        vm.prank(second_user);
+        bytes32 answer = bytes32(uint256(keccak256(abi.encodePacked(bytes32(uint256(keccak256("abcdefghi")) % FIELD_MODULUS)))) % FIELD_MODULUS);
+        bytes32 correct_guess = bytes32(uint256(keccak256("abcdefghi")) % FIELD_MODULUS);
+        proof = _getProof(correct_guess, answer, second_user);
+        panagram.makeGuess(proof);
+
+        vm.expectRevert(abi.encodeWithSelector(Panagram.Panagram__MinTimeNotPassed.selector, panagram.MIN_DURATION(), 0));
+        panagram.newRound(bytes32(uint256(keccak256(abi.encodePacked(bytes32(uint256(keccak256("third")) % FIELD_MODULUS)))) % FIELD_MODULUS));
+
+        vm.assertEq(panagram.s_currentRoundWinner(), second_user);
+        vm.assertEq(panagram.s_currentRound(), 2);
+    }
 
     function testSecondWinnerPasses() public {
         address user2 = makeAddr("user2");

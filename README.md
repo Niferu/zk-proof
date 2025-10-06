@@ -1,1 +1,1 @@
-# ZK-Proof
+# ZK Proof
